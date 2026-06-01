@@ -1,0 +1,26 @@
+# soda scan -d pg_datasource -c /opt/airflow/include/soda/configuration.yml -v SCHEMA=core /opt/airflow/include/soda/checks.yml
+
+# checks for <nombre_tabla>:
+checks for yt_api_videos:
+  # Se espera que el número de valores nulos en la columna "id" sea 0.
+  - missing_count("id") = 0
+  # Se espera que el número de valores dupplicados en la columna "id" sea 0.
+  - duplicate_count("id") = 0
+
+  # Se espera que el valor de la variable "likes_count_greater_than_vid_views" sea 0.
+  - likes_count_greater_than_vid_views = 0:
+      name: Check for likes_count greater than video_views
+      # El resultado de la consulta se almacena en la variable "likes_count_greater_than_vid_views"
+      likes_count_greater_than_vid_views query: |
+        SELECT COUNT(*)
+        FROM yt_api_videos
+        WHERE "likes_count" > "views"
+
+  # Se espera que el valor de la variable "comments_count_greater_than_vid_views" sea 0.
+  - comments_count_greater_than_vid_views = 0:
+      name: Check for comments_count greater than video_views
+      # El resultado de la consulta se almacena en la variable "comments_count_greater_than_vid_views"
+      comments_count_greater_than_vid_views query: |
+        SELECT COUNT(*)
+        FROM yt_api_videos
+        WHERE "comments_count" > "views"

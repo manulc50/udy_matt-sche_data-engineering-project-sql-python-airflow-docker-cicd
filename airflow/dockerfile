@@ -1,0 +1,11 @@
+ARG AIRFLOW_VERSION=2.9.2
+ARG PYTHON_VERSION=3.10
+
+FROM apache/airflow:${AIRFLOW_VERSION}-python${PYTHON_VERSION}
+
+COPY requirements.txt /
+
+# Usamos la opción "--no-cache-dir" para no cachear los paquetes de Python y, de esta forma, hacer
+# la imagen más pequeña en tamaño.
+#RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt

@@ -1,0 +1,127 @@
+name: CI-CD Pipeline
+
+# Eventos de GitHub para disparar o lanzar el Pipeline.
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+  pull_request:
+    branches:
+      - main
+  # Habilita poder disparar o lanzar el Pipeline manualmente.
+  workflow_dispatch:
+
+jobs:
+  # Nombre del Job.
+  build-and-push-image:
+    # Imagen del Sistema Operativo que se quiere usar para el entorno.
+    runs-on: ubuntu-latest
+    # Pasos del Job.
+    steps:
+      # Tarea que clona el repositorio en el entorno.
+      - name: Checkout code
+        uses: actions/ckeckout
+        # Tarea que comprueba si los archivos Dockerfile y requirements.txt han cambiado en el último commit.
+      - name: Get changed files
+        id: changed-files-build
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            airflow/dockerfile
+            airflow/requirements.txt
+      # Tarea que decarga y configura Docker en el entorno.
+      - name: Set up Docker buildx
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-build" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-build.outputs.any_changed == 'true'
+        uses: docker/setup-buildx-action@v3
+      # Tarea que hace login en DockerHub.
+      - name: Login to DockerHub
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-build" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-build.outputs.any_changed == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      # Tarea que construye una imagen de Docker y la sube al repositorio de DockerHub.
+      - name: Build and push Docker image
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-build" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-build.outputs.any_changed == 'true'
+        working-directory: ./airflow
+        # github.sha -> Es el código Hash del commit
+        run: |
+          docker buildx build --push \
+            --tag ${{ vars.DOCKERHUB_NAMESPACE }}/${{ vars.DOCKERHUB_REPOSITORY }}:latest \
+            --tag ${{ vars.DOCKERHUB_NAMESPACE }}/${{ vars.DOCKERHUB_REPOSITORY }}:${{ github.sha }} \
+            .
+  unit-and-integration-and-e2e-tests:
+    runs-on: ubuntu-latest
+    # Dependencia con el Job anterior "build-and-push-image".
+    needs: build-and-push-image
+    # Variables de entorno que se crearán en el entorno.
+    # Debido a que por temas de seguridad el archivo .env no se puede subir al repositorio de GitHub, tenemos que
+    # crear en el entorno variables de entorno que utilicen variables y secretos creados en el repositorio de GitHub.
+    env:
+      AIRFLOW_WWW_USER_USERNAME: ${{ secrets.AIRFLOW_WWW_USER_USERNAME }}
+      AIRFLOW_WWW_USER_PASSWORD: ${{ secrets.AIRFLOW_WWW_USER_PASSWORD }}
+      AIRFLOW_UID: ${{ vars.AIRFLOW_UID }}
+      CELERY_BACKEND_NAME: ${{ vars.CELERY_BACKEND_NAME }}
+      CELERY_BACKEND_USERNAME: ${{ secrets.CELERY_BACKEND_USERNAME }}
+      CELERY_BACKEND_PASSWORD: ${{ secrets.CELERY_BACKEND_PASSWORD }}
+      ELT_DATABASE_NAME: ${{ vars.ELT_DATABASE_NAME }}
+      ELT_DATABASE_USERNAME: ${{ secrets.ELT_DATABASE_USERNAME }}
+      ELT_DATABASE_PASSWORD: ${{ secrets.ELT_DATABASE_PASSWORD }}
+      FERNET_KEY: ${{ secrets.FERNET_KEY }}
+      METADATA_DATABASE_NAME: ${{ vars.METADATA_DATABASE_NAME }}
+      METADATA_DATABASE_USERNAME: ${{ secrets.METADATA_DATABASE_USERNAME }}
+      METADATA_DATABASE_PASSWORD: ${{ secrets.METADATA_DATABASE_PASSWORD }}
+      POSTGRES_CONN_USERNAME: ${{ secrets.POSTGRES_CONN_USERNAME }}
+      POSTGRES_CONN_PASSWORD: ${{ secrets.POSTGRES_CONN_PASSWORD }}
+      POSTGRES_CONN_HOST: ${{ vars.POSTGRES_CONN_HOST }}
+      POSTGRES_CONN_PORT: ${{ vars..POSTGRES_CONN_PORT }}
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+      DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
+      API_KEY: ${{ secrets.API_KEY }}
+      CHANNEL_HANDLE: ${{ vars.CHANNEL_HANDLE }}
+    steps:
+      # Tarea que clona el repositorio en el entorno.
+      - name: Checkout code
+        uses: actions/ckeckout
+      # Tarea que comprueba si los archivos de los directorios "dags" e "include" y el archivo "docker-compose.yaml" han
+      # cambiado en el último commit.
+      - name: Get changed files
+        id: changed-files-tests
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            airflow/dags/*
+            airflow/include/*
+            airflow/docker-compose.yaml
+      # Tarea que levanta y ejecuta los contenedores de Docker orquestados en el Docker Compose.
+      - name: Set up Docker Compose
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
+        working-directory: ./airflow
+        run: docker compose up -d
+      # Tarea que ejecuta los tests unitarios y de integración que se encuentran en el directorio "tests".
+      - name: Run unit and integration tests
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
+        working-directory: ./airflow
+        run: docker exec -t airflow-worker sh -c "pytest tests/ -v"
+      # Tarea que ejecuta los tests E2E correspondientes a los DAGs de Airflow.
+      - name: Run e2e DAG tests
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
+        run: |
+          DAG_NAMES=("produce_json" "update_db" "data_quality")
+          for DAG_NAME in "${DAG_NAMES[@]}"; do
+            docker exec -t airflow-worker sh -c "airflow dags test $DAG"
+          done
+      # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
+      - name: Tear down Docker Compose
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
+        working-directory: ./airflow
+        run: docker compose down -v
+        

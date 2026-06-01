@@ -21,7 +21,7 @@ jobs:
     steps:
       # Tarea que clona el repositorio en el entorno.
       - name: Checkout code
-        uses: actions/ckeckout@v4
+        uses: actions/checkout@v4
         # Tarea que comprueba si los archivos Dockerfile y requirements.txt han cambiado en el último commit.
       - name: Get changed files
         id: changed-files-build
@@ -86,7 +86,7 @@ jobs:
     steps:
       # Tarea que clona el repositorio en el entorno.
       - name: Checkout code
-        uses: actions/ckeckout@v4
+        uses: actions/checkout@v4
       # Tarea que comprueba si los archivos de los directorios "dags" e "include" y el archivo "docker-compose.yaml" han
       # cambiado en el último commit.
       - name: Get changed files

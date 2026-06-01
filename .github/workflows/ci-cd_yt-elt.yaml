@@ -42,7 +42,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       # Tarea que construye una imagen de Docker y la sube al repositorio de DockerHub.
       - name: Build and push Docker image
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-build" ha detectado cambios en los archivos indicados en ella.

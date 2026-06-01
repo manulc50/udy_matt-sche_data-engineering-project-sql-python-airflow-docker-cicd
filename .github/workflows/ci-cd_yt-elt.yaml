@@ -102,7 +102,7 @@ jobs:
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         working-directory: ./airflow
-        run: docker compose -f docker-compose-github-actions up -d
+        run: docker compose -f docker-compose-github-actions.yaml up -d
       # Tarea que ejecuta los tests unitarios y de integración que se encuentran en el directorio "tests".
       - name: Run unit and integration tests
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
@@ -124,5 +124,5 @@ jobs:
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         working-directory: ./airflow
-        run: docker compose -f docker-compose-github-actions down -v
+        run: docker compose -f docker-compose-github-actions.yaml down -v
         

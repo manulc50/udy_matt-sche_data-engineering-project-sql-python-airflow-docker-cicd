@@ -115,6 +115,7 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           sudo chown 50000:0 data
+          sudo chown 50000:0 airflow
           DAG_IDS=("produce_json")
           for DAG_ID in "${DAG_IDS[@]}"; do
             docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"

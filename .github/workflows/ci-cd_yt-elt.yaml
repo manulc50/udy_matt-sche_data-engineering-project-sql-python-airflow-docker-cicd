@@ -126,7 +126,7 @@ jobs:
           #done
       - name: Pruebaaaaa
         if: always()
-        run: cat airflow/logs/scheduler/2026-06-02/main.py.log
+        run: cat airflow/logs/dag_processor_manager/dag_processor_manager.log
       - name: Pruebaaaaa2
         if: always()
         run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"

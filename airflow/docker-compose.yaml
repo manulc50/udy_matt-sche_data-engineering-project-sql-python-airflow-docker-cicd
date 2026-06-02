@@ -119,7 +119,7 @@ services:
     # Use the .env file to read the connection params - SWITCH THIS OFF WHEN USING GITHUB ACTIONS
     env_file:
       - .env
-    # Env vars after POSTGRES_PASSWORD are needed for CI-CD workflow - SWITCH THIS ALL ON WHEN USING GITHUB ACTIONS
+    # Env vars after POSTGRES_PASSWORD are needed for # Env vars after POSTGRES_PASSWORD are needed for the Postgres initialization script that we use - SWITCH THIS ALL ON WHEN USING GITHUB ACTIONS
     environment:
       - POSTGRES_USER=${POSTGRES_CONN_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_CONN_PASSWORD}
@@ -132,8 +132,6 @@ services:
     #   - CELERY_BACKEND_NAME=${CELERY_BACKEND_NAME}
     #   - CELERY_BACKEND_USERNAME=${CELERY_BACKEND_USERNAME}
     #   - CELERY_BACKEND_PASSWORD=${CELERY_BACKEND_PASSWORD}
-    #   - POSTGRES_CONN_HOST=${POSTGRES_CONN_HOST}
-    #   - POSTGRES_CONN_PORT=${POSTGRES_CONN_PORT}
     ports:
       - 5432:5432
     volumes:

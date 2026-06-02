@@ -114,7 +114,8 @@ jobs:
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
-          sudo chown root:root data
+          docker exec -t airflow-worker sh -c "whoami && id"
+          sudo chown airflow:root data
           ls -la
           docker exec -t airflow-worker sh -c "ls -la"
           DAG_IDS=("produce_json" "update_db" "data_quality")

@@ -115,12 +115,15 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           sudo chown 50000:0 data
-          sudo chown 50000:0 airflow
-          DAG_IDS=("produce_json")
-          for DAG_ID in "${DAG_IDS[@]}"; do
-            docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
-            echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          done
+          docker exec -t airflow-worker sh -c "airflow dags test produce_json"
+        #run: |
+          #sudo chown 50000:0 data
+          #sudo chown 50000:0 airflow
+          #DAG_IDS=("produce_json")
+          #for DAG_ID in "${DAG_IDS[@]}"; do
+            #docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
+            #echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          #done
       # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
       - name: Tear down Docker Compose
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.

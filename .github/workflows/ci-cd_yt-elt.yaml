@@ -115,7 +115,8 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           sudo chown 50000:0 data
-          sleep 90
+          sudo chown 50000:0 airflow
+          sleep 40
           docker exec postgres psql -U postgres -d airflow_metadata_db -c "select * from dag;"
           docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         #run: |

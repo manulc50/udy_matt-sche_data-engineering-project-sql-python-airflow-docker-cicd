@@ -119,6 +119,7 @@ jobs:
           DAG_IDS=("produce_json" "update_db" "data_quality")
           for DAG_ID in "${DAG_IDS[@]}"; do
             docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
+            echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
           done
       # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
       - name: Tear down Docker Compose

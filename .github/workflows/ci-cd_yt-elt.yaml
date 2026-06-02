@@ -114,7 +114,8 @@ jobs:
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
-          sudo chown 50000:0 data  
+          sudo chown 50000:0 data
+          sudo chown 50000:0 airflow
           docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         #run: |
           #sudo chown 50000:0 data

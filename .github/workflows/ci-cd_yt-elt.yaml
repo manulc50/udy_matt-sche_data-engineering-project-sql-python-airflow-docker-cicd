@@ -113,24 +113,23 @@ jobs:
       - name: Run e2e DAG tests
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
+        #run: |
+          #sudo chown 50000:0 data
+          #sudo chown -R 50000:0 airflow
+          #docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         run: |
           sudo chown 50000:0 data
           sudo chown -R 50000:0 airflow
-          docker exec -t airflow-worker sh -c "airflow dags test produce_json"
-        #run: |
-          #sudo chown 50000:0 data
-          #sudo chown 50000:0 airflow
-          #DAG_IDS=("produce_json")
-          #for DAG_ID in "${DAG_IDS[@]}"; do
-            #docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
-            #echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-          #done
-      - name: Pruebaaaaa
-        if: always()
-        run: ls -l airflow/logs/scheduler/latest
-      - name: Pruebaaaaa2
-        if: always()
-        run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"
+          DAG_IDS=("produce_json" "update_db" "data_quality")
+          for DAG_ID in "${DAG_IDS[@]}"; do
+            docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
+          done
+      #- name: Pruebaaaaa
+        #if: always()
+        #run: ls -l airflow/logs/scheduler/latest
+      #- name: Pruebaaaaa2
+        #if: always()
+        #run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"
       # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
       - name: Tear down Docker Compose
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.

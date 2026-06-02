@@ -19,9 +19,7 @@ default_args = {
     #"retries": 1,
     #"retry_delay: timedelta(minutes=5)",
     "max_active_runs": 1,
-    "dagrun_timeout": timedelta(hours=1),
-    "start_date": datetime(2025, 1, 1, tzinfo=local_tz),
-    #"end_date": datetime(2030, 12, 12, tzinfo=local_tz)
+    "dagrun_timeout": timedelta(hours=1)
 }
 
 with DAG(
@@ -30,7 +28,7 @@ with DAG(
     default_args=default_args,
     schedule="0 14 * * *",
     catchup=False,
-    #start_date=datetime(2025, 1, 1, tzinfo=local_tz),
+    start_date=datetime(2025, 1, 1, tzinfo=local_tz),
     #end_date=datetime(2030, 12, 12, tzinfo=local_tz)
 ) as dag:
     

@@ -83,7 +83,6 @@ jobs:
       DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY }}
       API_KEY: ${{ secrets.API_KEY }}
       CHANNEL_HANDLE: ${{ vars.CHANNEL_HANDLE }}
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: False
     steps:
       # Tarea que clona el repositorio en el entorno.
       - name: Checkout code

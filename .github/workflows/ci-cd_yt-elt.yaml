@@ -115,7 +115,8 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           sudo chown 50000:0 data
-          docker exec -t airflow-worker sh -c "airflow dags test update_db"
+          sleep 60
+          docker exec -t airflow-worker sh -c "airflow dags test "produce_json"
         #run: |
           #sudo chown 50000:0 data
           #sudo chown 50000:0 airflow

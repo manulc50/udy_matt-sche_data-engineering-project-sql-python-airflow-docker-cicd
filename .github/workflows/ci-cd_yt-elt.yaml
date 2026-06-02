@@ -116,7 +116,7 @@ jobs:
         run: |
           sudo chown 50000:0 data
           sleep 60
-          docker exec -t airflow-worker sh -c "airflow dags test "produce_json"
+          docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         #run: |
           #sudo chown 50000:0 data
           #sudo chown 50000:0 airflow

@@ -115,7 +115,7 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
           docker exec -t airflow-worker sh -c "whoami && id"
-          sudo chown airflow:root data
+          sudo chown 50000:0 data
           ls -la
           docker exec -t airflow-worker sh -c "ls -la"
           DAG_IDS=("produce_json" "update_db" "data_quality")

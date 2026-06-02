@@ -114,8 +114,7 @@ jobs:
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: |
-          sudo chown 50000:0 data
-          docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;" 
+          sudo chown 50000:0 data  
           docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         #run: |
           #sudo chown 50000:0 data
@@ -126,6 +125,9 @@ jobs:
             #echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
           #done
       # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
+      - name: Pruebaaaaa
+        if: always()
+        run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"
       - name: Tear down Docker Compose
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'

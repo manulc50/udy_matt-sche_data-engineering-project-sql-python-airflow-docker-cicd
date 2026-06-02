@@ -124,9 +124,9 @@ jobs:
             #docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
             #echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
           #done
-      - name: Pruebaaaaa2
+      - name: Pruebaaaaa
         if: always()
-        run: docker exec airflow-scheduler ls -l logs/scheduler/latest
+        run: ls -l logs/scheduler
       - name: Pruebaaaaa2
         if: always()
         run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"

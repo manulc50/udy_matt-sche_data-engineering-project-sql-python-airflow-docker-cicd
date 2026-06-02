@@ -109,27 +109,24 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         working-directory: ./airflow
         run: docker exec -t airflow-worker sh -c "pytest tests/ -v"
+      # Cambiamos el propietario y el grupo del propietario de "runner:runner" (usuario y grupo del entorno Host de GitHub Actions) a "airflow:root" (usuario
+      # y grupo de los contenedores de Airflow) en los directorios de enlace que montamos con Docker hacia los contenedores de Airflow para que los componentes
+      # de Airflow tengan permisos de escritura y las ejecuciones de los DAGs funcionen correctamente.
+      - name: Change owner of Docker bind mounted directories of Airflow
+        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
+        if: steps.changed-files-tests.outputs.any_changed == 'true'
+        run: |
+          sudo chown $AIRFLOW_UID:0 data
+          sudo chown -R $AIRFLOW_UID:0 airflow
       # Tarea que ejecuta los tests E2E correspondientes a los DAGs de Airflow.
       - name: Run e2e DAG tests
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.
         if: steps.changed-files-tests.outputs.any_changed == 'true'
-        #run: |
-          #sudo chown 50000:0 data
-          #sudo chown -R 50000:0 airflow
-          #docker exec -t airflow-worker sh -c "airflow dags test produce_json"
         run: |
-          sudo chown 50000:0 data
-          sudo chown -R 50000:0 airflow
           DAG_IDS=("produce_json" "update_db" "data_quality")
           for DAG_ID in "${DAG_IDS[@]}"; do
             docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"
           done
-      #- name: Pruebaaaaa
-        #if: always()
-        #run: ls -l airflow/logs/scheduler/latest
-      #- name: Pruebaaaaa2
-        #if: always()
-        #run: docker exec airflow-scheduler psql "postgresql://postgres:wWfKvYbyD3kRnE4u@postgres/airflow_metadata_db" -c "select * from dag;"
       # Tarea que termina y elimina los contenedores orquestados en el Docker Compose y también elimina los volúmenes creados por él.
       - name: Tear down Docker Compose
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella.

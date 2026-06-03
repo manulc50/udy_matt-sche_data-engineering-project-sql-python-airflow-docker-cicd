@@ -67,6 +67,8 @@ jobs:
     env:
       AIRFLOW_WWW_USER_USERNAME: ${{ secrets.AIRFLOW_WWW_USER_USERNAME }}
       AIRFLOW_WWW_USER_PASSWORD: ${{ secrets.AIRFLOW_WWW_USER_PASSWORD }}
+      # Nota: Se ha establecido la variable AIRFLOW_UID de GitHub Actions en 0 (usuario root) para evitar problemas de
+      # permisos de escritura en los directorios de enlace de Docker que se montan relacionados con Airflow.
       AIRFLOW_UID: ${{ vars.AIRFLOW_UID }}
       CELERY_BACKEND_NAME: ${{ vars.CELERY_BACKEND_NAME }}
       CELERY_BACKEND_USERNAME: ${{ secrets.CELERY_BACKEND_USERNAME }}
@@ -114,24 +116,12 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         working-directory: ./airflow
         run: docker exec -t airflow-worker sh -c "pytest tests/ -v"
-      # Cambiamos el propietario y el grupo del propietario de "runner:runner" (usuario y grupo del entorno Host de GitHub Actions) a "airflow:root" (usuario
-      # y grupo de los contenedores de Airflow) en los directorios de enlace que montamos con Docker hacia los contenedores de Airflow para que los componentes
-      # de Airflow tengan permisos de escritura y las ejecuciones de los DAGs funcionen correctamente.
-      #- name: Change owner of Docker bind mounted directories of Airflow
-        # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella o si
-        # el Pipeline se ha ejecutado manualmente (evento "workflow_dispatch" de GitHub Actions).
-        #if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        #run: |
-          #sudo chown $AIRFLOW_UID:0 data
-          #sudo chown -R $AIRFLOW_UID:0 airflow
       # Tarea que ejecuta los tests E2E correspondientes a los DAGs de Airflow.
       - name: Run e2e DAG tests
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella o si
         # el Pipeline se ha ejecutado manualmente (evento "workflow_dispatch" de GitHub Actions).
         if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
-          ls -ln airflow
-          docker exec -t airflow-worker sh -c "ls -ln && id && env"
           DAG_IDS=("produce_json" "update_db" "data_quality")
           for DAG_ID in "${DAG_IDS[@]}"; do
             docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"

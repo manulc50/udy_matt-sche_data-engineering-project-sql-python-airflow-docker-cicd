@@ -131,7 +131,7 @@ jobs:
         if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           ls -ln airflow
-          docker exec -t airflow-worker sh -c "ls -ln"
+          docker exec -t airflow-worker sh -c "ls -ln && id"
           DAG_IDS=("produce_json" "update_db" "data_quality")
           for DAG_ID in "${DAG_IDS[@]}"; do
             docker exec -t airflow-worker sh -c "airflow dags test $DAG_ID"

@@ -117,13 +117,13 @@ jobs:
       # Cambiamos el propietario y el grupo del propietario de "runner:runner" (usuario y grupo del entorno Host de GitHub Actions) a "airflow:root" (usuario
       # y grupo de los contenedores de Airflow) en los directorios de enlace que montamos con Docker hacia los contenedores de Airflow para que los componentes
       # de Airflow tengan permisos de escritura y las ejecuciones de los DAGs funcionen correctamente.
-      - name: Change owner of Docker bind mounted directories of Airflow
+      #- name: Change owner of Docker bind mounted directories of Airflow
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella o si
         # el Pipeline se ha ejecutado manualmente (evento "workflow_dispatch" de GitHub Actions).
-        if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          sudo chown $AIRFLOW_UID:0 data
-          sudo chown -R $AIRFLOW_UID:0 airflow
+        #if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+        #run: |
+          #sudo chown $AIRFLOW_UID:0 data
+          #sudo chown -R $AIRFLOW_UID:0 airflow
       # Tarea que ejecuta los tests E2E correspondientes a los DAGs de Airflow.
       - name: Run e2e DAG tests
         # Esta tarea solo se ejecutará si la tarea anterior con id "changed-files-tests" ha detectado cambios en los archivos indicados en ella o si
